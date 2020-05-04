@@ -1,0 +1,16 @@
+{
+	"name": "gulp-frontend-template",
+	"version": "1.0.0",
+	"description": "gulp 4 + pug + scss template",
+	"main": "gulpfile.js",
+	"scripts": {
+		"start": "gulp start"
+	},
+	"keywords": [],
+	"author": "Oleg Strigo",
+	"license": "ISC",
+	"devDependencies": {
+		"del": "^5.1.0",
+		"gulp": "^4.0.2"
+	}
+}
