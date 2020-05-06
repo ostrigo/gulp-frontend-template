@@ -1,41 +1,76 @@
-// Paths & Directories
-const dist_folder = 'dist',
-	source_folder = '#src'
+const path = require('./gulp/config')
+const { dest, series, parallel, src, watch } = require('gulp')
 
-const path = {
-	build: {
-		html: dist_folder + '/',
-		css: dist_folder + '/css/',
-		js: dist_folder + '/js/',
-		img: dist_folder + '/img/',
-		fonts: dist_folder + '/fonts/',
-	},
-	src: {
-		pug: source_folder + '/pug/**/*.pug',
-		css: source_folder + '/styles/style.scss',
-		js: source_folder + '/js/main.js',
-		img: source_folder + '/img/**/*.{jpg,png,svg,gif,ico,webp}',
-		fonts: source_folder + '/fonts/*.ttf',
-	},
-	watch: {
-		html: source_folder + '/pug/**/*.pug',
-		css: source_folder + '/styles/**/*.scss',
-		js: source_folder + '/js/**/*.js',
-		img: source_folder + '/img/**/*.{jpg,png,svg,gif,ico,webp}',
-	},
-	clean: './' + dist_folder + '/',
+const pug = require('gulp-pug')
+const plumber = require('gulp-plumber')
+const bs = require('browser-sync').create()
+const autoprefixer = require('autoprefixer')
+const postcss = require('gulp-postcss')
+const sourcemaps = require('gulp-sourcemaps')
+const sass = require('gulp-sass')
+const csso = require('gulp-csso')
+const rename = require('gulp-rename')
+const del = require('del')
+
+function clean(cb) {
+	return del(path.clean).then(() => {
+		cb()
+	})
 }
 
-const gulp = require('gulp'),
-	pug = require('gulp-pug'),
-	bs = require('browser-sync')
-
-function html() {
-	return gulp
-		.src(path.src.pug)
+function pug2html() {
+	return src(path.src.pug)
 		.pipe(pug({ pretty: true }))
-		.pipe(gulp.dest(path.build.html))
+		.pipe(dest(path.build.html))
 		.pipe(bs.stream())
 }
 
-module.exports.html = html
+function styles() {
+	return src(path.src.css)
+		.pipe(plumber())
+		.pipe(
+			sass({
+				outputStyle: 'expanded',
+			})
+		)
+		.pipe(
+			postcss([
+				autoprefixer({
+					overrideBrowserslist: ['last 5 versions'],
+					cascade: true,
+				}),
+			])
+		)
+		.pipe(dest(path.build.css))
+		.pipe(sourcemaps.init())
+		.pipe(csso({}))
+		.pipe(rename({ suffix: '.min' }))
+		.pipe(sourcemaps.write('.'))
+		.pipe(dest(path.build.css))
+		.pipe(bs.stream())
+}
+
+function serve(cb) {
+	bs.init({
+		server: path.build.html,
+		notify: false,
+		open: true,
+		cors: true,
+	})
+
+	watch([path.watch.html], pug2html)
+	watch([path.watch.css], styles)
+
+	return cb()
+}
+
+module.exports.html = pug2html
+module.exports.styles = styles
+module.exports.clean = clean
+module.exports.serve = serve
+
+// const dev = parallel(pug2html, styles, script, fonts, imageMinify)
+const dev = parallel(pug2html, styles)
+const build = series(clean, dev)
+module.exports.start = series(build, serve)
+module.exports.build = series(build)

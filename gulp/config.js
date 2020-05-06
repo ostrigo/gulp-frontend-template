@@ -11,7 +11,7 @@ const path = {
 		fonts: dist_folder + '/fonts/',
 	},
 	src: {
-		html: source_folder + '/pug/**/*.pug',
+		pug: source_folder + '/pug/**/*.pug',
 		css: source_folder + '/styles/style.scss',
 		js: source_folder + '/js/main.js',
 		img: source_folder + '/img/**/*.{jpg,png,svg,gif,ico,webp}',
