@@ -7,7 +7,7 @@ Template with `Gulp` + `Pug` + `SCSS`.
 1. Clone repo
 
 ```sh
-$ git clone {repo-url}.git
+$ git clone https://github.com/ostrigo/gulp-frontend-template.git
 ```
 
 2. Start developing.
