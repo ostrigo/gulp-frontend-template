@@ -11,6 +11,7 @@ const sass = require('gulp-sass')
 const csso = require('gulp-csso')
 const rename = require('gulp-rename')
 const del = require('del')
+const imagemin = require('gulp-imagemin')
 
 function clean(cb) {
 	return del(path.clean).then(() => {
@@ -50,6 +51,28 @@ function styles() {
 		.pipe(bs.stream())
 }
 
+function imageMinify() {
+	return src(path.src.img)
+		.pipe(
+			imagemin(
+				[
+					imagemin.gifsicle({ interlaced: true }),
+					imagemin.mozjpeg({
+						quality: 75,
+						progressive: true,
+					}),
+					imagemin.optipng({ optimizationLevel: 5 }),
+					imagemin.svgo({
+						plugins: [{ removeViewBox: true }, { cleanupIDs: false }],
+					}),
+				],
+				{ verbose: true }
+			)
+		)
+		.pipe(dest(path.build.img))
+		.pipe(bs.stream())
+}
+
 function serve(cb) {
 	bs.init({
 		server: path.build.html,
@@ -60,6 +83,7 @@ function serve(cb) {
 
 	watch([path.watch.html], pug2html)
 	watch([path.watch.css], styles)
+	watch([path.watch.img], imageMinify)
 
 	return cb()
 }
@@ -68,9 +92,10 @@ module.exports.html = pug2html
 module.exports.styles = styles
 module.exports.clean = clean
 module.exports.serve = serve
+module.exports.img = imageMinify
 
 // const dev = parallel(pug2html, styles, script, fonts, imageMinify)
-const dev = parallel(pug2html, styles)
+const dev = parallel(pug2html, styles, imageMinify)
 const build = series(clean, dev)
 module.exports.start = series(build, serve)
 module.exports.build = series(build)
