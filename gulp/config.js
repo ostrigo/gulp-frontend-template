@@ -13,7 +13,8 @@ const path = {
 	src: {
 		pug: source_folder + '/pug/**/*.pug',
 		css: source_folder + '/styles/style.scss',
-		js: source_folder + '/js/main.js',
+		mainJs: source_folder + '/js/main.js',
+		vendorJs: source_folder + '/js/vendor/*.js',
 		img: source_folder + '/img/**/*.{jpg,png,svg,gif,ico,webp}',
 		fonts: source_folder + '/fonts/*.ttf',
 	},

@@ -12,6 +12,8 @@ const csso = require('gulp-csso')
 const rename = require('gulp-rename')
 const del = require('del')
 const imagemin = require('gulp-imagemin')
+const uglify = require('gulp-uglify-es').default
+const concat = require('gulp-concat')
 
 function clean(cb) {
 	return del(path.clean).then(() => {
@@ -73,6 +75,14 @@ function imageMinify() {
 		.pipe(bs.stream())
 }
 
+function js() {
+	src(path.src.vendorJs).pipe(concat('libs.min.js')).pipe(dest(path.build.js))
+	return src(path.src.mainJs)
+		.pipe(uglify())
+		.pipe(dest(path.build.js))
+		.pipe(bs.stream())
+}
+
 function serve(cb) {
 	bs.init({
 		server: path.build.html,
@@ -84,6 +94,7 @@ function serve(cb) {
 	watch([path.watch.html], pug2html)
 	watch([path.watch.css], styles)
 	watch([path.watch.img], imageMinify)
+	watch([path.watch.js], js)
 
 	return cb()
 }
@@ -93,9 +104,12 @@ module.exports.styles = styles
 module.exports.clean = clean
 module.exports.serve = serve
 module.exports.img = imageMinify
+module.exports.js = js
 
-// const dev = parallel(pug2html, styles, script, fonts, imageMinify)
-const dev = parallel(pug2html, styles, imageMinify)
+// const dev = parallel(fonts)
+const dev = parallel(pug2html, styles, imageMinify, js)
 const build = series(clean, dev)
+
 module.exports.start = series(build, serve)
+module.exports.default = series(build, serve)
 module.exports.build = series(build)
